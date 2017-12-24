@@ -6,22 +6,38 @@ from cffm cimport cs_di, ffm_param
 # Import some functionality from Python and the C stdlib
 from cpython.pycapsule cimport *
 
+
 from libc.stdlib cimport malloc, free
 from scipy.sparse import csc_matrix
 cimport numpy as np
 import numpy as np
 
+'''
+cdef: is used for cython functions. All types must be declared. cdef declared functions are not visible to Python code
+that imports the module. Note that you are actually writing C functions with cdef. 
+'''
+
+'''
+void* PyCapsule_GetPointer(PyObject *capsule, const char *name): Retrieve the pointer stored in the capsule. 
+On failure, set an exception and return NULL. The name parameter must compare exactly to the name stored in the capsule.
+If the name stored in the capsule is NULL, the name passed in must also be NULL. 
+Python uses the C function strcmp() to compare capsule names.
+'''
 
 # Destructor for cleaning up CsMatrix objects
 cdef del_CsMatrix(object obj):
-    pt = <cffm.cs_di *> PyCapsule_GetPointer(obj, "CsMatrix")
+    pt = <cffm.cs_di *> PyCapsule_GetPointer(obj, "CsMatrix")  # why "CsMatrix" ? cs_di doesnt have this name. Explain void. 
     free(<void *> pt)
-
-
+# void free(void*, ptr): deallocate memory block.
+# ptr: pointer to a memory block previously allocated with malloc, calloc or realloc.
+ 
 # Create a CsMatrix object and return as a capsule
 def CsMatrix(X not None):
     cdef cffm.cs_di *p
     p = <cffm.cs_di *> malloc(sizeof(cffm.cs_di))
+    # void* malloc (size_t size): allocates a block of size bytes of memory, returning a pointer to the beginning of the block.
+    # On success, a pointer to the memory is allocated by the function and this type of pointer is always void*,
+    # which can be cast to the desired type of data pointer in order to be dereferenceable. 
     if p == NULL:
         raise MemoryError("No memory to make a Point")
 
@@ -62,7 +78,7 @@ def FFMParam(fm):
     p.k = fm.rank
     p.stepsize = fm.step_size
     p.init_sigma = fm.init_stdev
-    p.TASK = map_flags[fm.task]
+    p.TASK = map_flags[fm.task]  # ? 
     p.rng_seed = fm.random_state
     p.init_lambda_w = fm.l2_reg_w
     p.init_lambda_V = fm.l2_reg_V
