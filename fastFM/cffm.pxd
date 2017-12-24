@@ -1,6 +1,17 @@
 # Author: Immanuel Bayer
 # License: BSD 3 clause
 
+'''
+Each Cython module has a single module-level namespace for both Python and C names. This can be inconvenient
+if you want to wrap some external C functions and provide the Python user with Python functions of the same names.
+
+The best way to resolve this naming conflicts is to put the extern C function declarations into a .pxd file for an imaginary 
+module, and cimport that module. 
+
+cdef extern from name 
+    ctypedef struct name 
+
+'''
 cdef extern from "../fastFM-core/externals/CXSparse/Include/cs.h":
     ctypedef struct cs_di:  # matrix in compressed-column or triplet form */
         int nzmax      # maximum number of entries */
